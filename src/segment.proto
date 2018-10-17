@@ -1,0 +1,42 @@
+syntax = "proto2";
+
+package protobuf;
+
+option java_outer_classname = "SegmentPB";
+
+message Segment
+{
+	enum SegmentType
+	{
+		NONE = 0;
+		NEXT = 1;
+		ERROR = 2;
+		ACCEPT = 2;
+		REJECT = 3;
+		REQUEST_CONNECT = 4;
+		DISCONNECT = 5;
+
+		REQUEST_KEY = 6;
+		SEND_KEY = 7;
+
+		SEND_MESSAGE = 8;
+		SEND_FILE = 9;
+
+		REQUEST_SEND_MESSAGE = 10;
+		REQUEST_SEND_FILE = 11;
+	}
+
+	required SegmentType type = 1 [default = NONE];
+	required string sender = 2 [default = "0"];
+	required string receiver = 3 [default = "1"];
+	required string data = 4 [default = "0"];
+	required string dchecksum = 5 [default = "0"];
+	required string signature = 6 [default = "0"];
+	required string schecksum = 7 [default = "0"];
+
+	optional string pubkey = 8;
+	optional string verkey = 9;
+	optional string length = 10;
+	optional string identifier = 11;
+
+}
