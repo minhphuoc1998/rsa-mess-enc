@@ -244,7 +244,7 @@ public class sSegment
 		return segment;
 	}
 
-	public static Segment newSegmentRequestSengMessage(String sender, String receiver, String length)
+	public static Segment newSegmentRequestSendMessage(String sender, String receiver, String length)
 	{
 		// New builder
 		Segment.Builder _segment = Segment.newBuilder();

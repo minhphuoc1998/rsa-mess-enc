@@ -10,8 +10,44 @@ import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
 
+import protobuf.sSegment;
+import protobuf.SegmentPB.Segment;
+import client.Client;
+
 public class Rsa 
 {
+	public static void main(String[] args) throws Exception
+	{
+		KeyPair s = buildKeyPair();
+		PublicKey t = s.getPublic();
+		PrivateKey z = s.getPrivate();
+		
+		KeyPair q = buildKeyPair(2176);
+		PublicKey w = q.getPublic();
+		PrivateKey r = q.getPrivate();
+		
+		String a = "conbocuoi";
+		byte[] b = a.getBytes();
+		byte[] c = encrypt(t, b);
+		String d = byteToString(c);
+		
+		Segment sm = sSegment.newSegmentSendMessage("1", "2", "conbocuoi", t, r);
+		
+		String enc = sm.getData();
+		
+		byte[] e = stringToByte(enc);
+		byte[] f = decrypt(z, e);
+		String g = String.valueOf(f);
+		System.out.println(f[0]);
+		System.out.println(f[1]);
+		System.out.println(f[2]);
+		System.out.println(f[3]);
+		System.out.println(f[4]);
+		System.out.println(f[5]);
+		
+
+	}
+	
 	public static int BLOCK_SIZE = 240;
 	
     public static KeyPair buildKeyPair() throws NoSuchAlgorithmException {
@@ -19,6 +55,25 @@ public class Rsa
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(keySize);      
         return keyPairGenerator.genKeyPair();
+    }
+
+    public static KeyPair buildKeyPair(int length) throws NoSuchAlgorithmException {
+        final int keySize = length;
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(keySize);      
+        return keyPairGenerator.genKeyPair();
+    }
+    
+    public static byte[][] splitMessage(byte[] message)
+    {
+    	byte[][] messages = new byte[(message.length + BLOCK_SIZE - 1) / BLOCK_SIZE][BLOCK_SIZE];
+    	
+    	for (int i = 0; i < message.length; i ++)
+    	{
+    		messages[i / BLOCK_SIZE][i % BLOCK_SIZE] = message[i];
+    	}
+    	
+    	return messages;
     }
     
     public static String[] splitMessage(String message)
@@ -55,6 +110,13 @@ public class Rsa
 
         return cipher.doFinal(message);  
     }
+    
+    public static byte[] decrypt(PrivateKey privateKey, String encrypted) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");  
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        
+        return cipher.doFinal(Rsa.stringToByte(encrypted));
+    }
 
     public static byte[] decrypt(PrivateKey privateKey, byte [] encrypted) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");  
@@ -81,7 +143,7 @@ public class Rsa
     	
     	return result;
     }
-   
+
     public static byte[] stringToByte(String s)
     {
     	String[] _s = s.split(" ");
@@ -99,6 +161,16 @@ public class Rsa
     	if (a.length != b.length)
     		return false;
     	for (int i = 0; i < a.length; i ++)
+    	{
+    		if (a[i] != b[i])
+    			return false;
+    	}
+    	return true;
+    }
+    
+    public static boolean checkEquals(byte[] a, byte[] b, int length)
+    {
+    	for (int i = 0; i < length; i ++)
     	{
     		if (a[i] != b[i])
     			return false;
