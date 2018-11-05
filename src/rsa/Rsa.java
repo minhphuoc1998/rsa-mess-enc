@@ -9,6 +9,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.Cipher;
+import java.util.Base64;
 
 import protobuf.sSegment;
 import protobuf.SegmentPB.Segment;
@@ -18,34 +19,12 @@ public class Rsa
 {
 	public static void main(String[] args) throws Exception
 	{
-		KeyPair s = buildKeyPair();
-		PublicKey t = s.getPublic();
-		PrivateKey z = s.getPrivate();
+		KeyPair a = buildKeyPair();
+		PublicKey pub = a.getPublic();
+		PrivateKey pri = a.getPrivate();
+		System.out.println(getString(pub));
+		System.out.println(pri.toString());
 		
-		KeyPair q = buildKeyPair(2176);
-		PublicKey w = q.getPublic();
-		PrivateKey r = q.getPrivate();
-		
-		String a = "conbocuoi";
-		byte[] b = a.getBytes();
-		byte[] c = encrypt(t, b);
-		String d = byteToString(c);
-		
-		Segment sm = sSegment.newSegmentSendMessage("1", "2", "conbocuoi", t, r);
-		
-		String enc = sm.getData();
-		
-		byte[] e = stringToByte(enc);
-		byte[] f = decrypt(z, e);
-		String g = String.valueOf(f);
-		System.out.println(f[0]);
-		System.out.println(f[1]);
-		System.out.println(f[2]);
-		System.out.println(f[3]);
-		System.out.println(f[4]);
-		System.out.println(f[5]);
-		
-
 	}
 	
 	public static int BLOCK_SIZE = 240;
@@ -115,7 +94,7 @@ public class Rsa
         Cipher cipher = Cipher.getInstance("RSA");  
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
         
-        return cipher.doFinal(Rsa.stringToByte(encrypted));
+        return cipher.doFinal(Rsa.decode(encrypted));
     }
 
     public static byte[] decrypt(PrivateKey privateKey, byte [] encrypted) throws Exception {
@@ -156,6 +135,18 @@ public class Rsa
     	
     }
     
+    public static String encode(byte[] b)
+    {
+    	byte[] encodedBytes = Base64.getEncoder().encode(b);
+    	return new String(encodedBytes);
+    }
+    
+    public static byte[] decode(String s)
+    {
+    	byte[] decodedBytes = Base64.getDecoder().decode(s.getBytes());
+    	return decodedBytes;
+    }
+    
     public static boolean checkEquals(byte[] a, byte[] b)
     {
     	if (a.length != b.length)
@@ -176,5 +167,31 @@ public class Rsa
     			return false;
     	}
     	return true;
+    }
+    
+    public static String getString(PublicKey pubkey)
+    {
+    	int block = 90;
+    	String ans = "";
+    	String s = pubkey.toString();
+    	int modi = s.indexOf("modulus: ");
+    	int expi = s.indexOf("public exponent: ");
+    	String s1 = s.substring(0, modi).trim();
+    	String s2 = s.substring(modi, expi).trim();
+    	String s3 = s.substring(expi).trim();
+    	
+    	String[] s2s = new String[(s2.length() + block - 1) / block];
+    	
+    	for (int i = 0; i < (s2.length() + block - 1) / block; i ++)
+    	{
+    		s2s[i] = s2.substring(i * block, Math.min((i + 1) * block, s2.length()));
+    	}
+    	ans += s1 + "\n";
+    	for (int i = 0; i < s2s.length; i ++)
+    	{
+    		ans += s2s[i] + "\n";
+    	}
+    	ans += s3;
+    	return ans;
     }
 }

@@ -46,7 +46,7 @@ public class ServiceThread implements Runnable
 		Segment.Builder _segment = Segment.newBuilder();
 		TextFormat.getParser().merge(raw, _segment);
 		Segment segment = _segment.build();
-		
+//		System.out.println(segment.toString());
 		return segment;
 	}
 	
@@ -74,14 +74,12 @@ public class ServiceThread implements Runnable
 	{
 		String receiver = segment.getReceiver();
 		
-		System.out.println(receiver);
-		System.out.println(Server.sTable.contain(receiver));
+//		System.out.println(receiver);
 		
 		Socket socket = Server.sTable.getSocket(receiver);
 		
 		DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-		System.out.println("Send: ");
-		System.out.println(segment.toString());
+//		System.out.println(segment.toString());
 		dos.writeUTF(segment.toString());
 	}
 	

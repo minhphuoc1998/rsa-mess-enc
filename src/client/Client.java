@@ -3,7 +3,7 @@ package client;
 import java.io.*;
 import java.net.*;
 import java.security.*;
-
+import test.clform;
 import hash.*;
 import protobuf.sSegment;
 import rsa.Rsa;
@@ -24,8 +24,11 @@ public class Client implements Runnable
 	public Scanner scn;
 	public String identifier;
 	public CTable cTable;
+	public PublicKey pubkey;
+	public PublicKey verkey;
 	public PrivateKey prikey;
 	public PrivateKey sigkey;
+	public boolean sending;
 	
 	public Client(String host, int port)
 	{
@@ -39,6 +42,8 @@ public class Client implements Runnable
 		
 		// Initialize Scanner
 		scn = new Scanner(System.in);
+		
+		sending = false;
 	}
 	
 	public boolean connect()
@@ -95,11 +100,13 @@ public class Client implements Runnable
 			KeyPair firstKeyPair = Rsa.buildKeyPair(2048);
 			prikey = firstKeyPair.getPrivate();
 			pubKey = firstKeyPair.getPublic();
+			this.pubkey = pubKey;
 			pubkey = Rsa.byteToString(pubKey.getEncoded());
 				// Generate Signing Key and Verifying Key
 			KeyPair secondKeyPair = Rsa.buildKeyPair(2176);
 			sigkey = secondKeyPair.getPrivate();
 			verKey = secondKeyPair.getPublic();
+			this.verkey = verKey;
 			verkey = Rsa.byteToString(verKey.getEncoded());
 		}
 		catch (Exception e)
@@ -191,9 +198,14 @@ public class Client implements Runnable
 	
 	public boolean sendMessage(String identifier, String message) throws Exception
 	{
+		sending = true;
+		
 		// Get pubkey
 		if (!getPublicKey(identifier))
+		{
+			sending = false;
 			return false;
+		}
 		
 		PublicKey pubkey = cTable.getPublicKey(identifier);
 		
@@ -216,7 +228,10 @@ public class Client implements Runnable
 		// Receive Agreement
 		Segment rRequestSendMessage = receiveSegment();
 		if (!sSegment.isAccept(rRequestSendMessage))
+		{
+			sending = false;
 			return false;
+		}
 		
 		System.out.println("sendMessage: received agreement");
 		
@@ -241,9 +256,13 @@ public class Client implements Runnable
 				else if (sSegment.isError(rSendMess))
 					sendSegment(sendMess);
 				else
+				{
+					sending = false;
 					return false;
+				}
 			}
 		}
+		sending = false;
 		return true;
 	}
 	
@@ -315,8 +334,8 @@ public class Client implements Runnable
 		String message = segment.getData();
 		String signature = segment.getSignature();
 		
-		byte[] _message = Rsa.stringToByte(message);
-		byte[] _signature = Rsa.stringToByte(signature);
+		byte[] _message = Rsa.decode(message);
+		byte[] _signature = Rsa.decode(signature);
 		byte[] _verification = Rsa.verify(verkey, _signature);
 		if (Rsa.checkEquals(_message, _verification, _message.length))
 			return true;

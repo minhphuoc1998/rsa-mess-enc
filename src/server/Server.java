@@ -15,9 +15,7 @@ public class Server implements Runnable
 
 	public ServerSocket listener;
 	public static STable sTable;
-	// Number of online user
 	public static int clientNumber;
-	// Number of connected user
 	public static int clientNumbers;
 	public int port;
 	
@@ -30,8 +28,7 @@ public class Server implements Runnable
 		
 		try
 		{
-			port = 7777;
-			System.out.println("Server is serving at port " + port);
+			port = 5003;
 			listener = new ServerSocket(port);
 			
 		}

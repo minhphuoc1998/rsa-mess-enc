@@ -225,9 +225,9 @@ public class sSegment
 		
 		// Encrypt data
 		byte[] encrypted = Rsa.encrypt(pubkey, data.getBytes());
-		String encrypteddata = Rsa.byteToString(encrypted);
+		String encrypteddata = Rsa.encode(encrypted);
 		byte[] signed = Rsa.sign(sigkey, encrypted);
-		String signeddata = Rsa.byteToString(signed);
+		String signeddata = Rsa.encode(signed);
 		
 		// Checksum
 		String dchecksum = Function.checksum(encrypteddata).toString();
